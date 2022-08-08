@@ -3,14 +3,18 @@ package menu
 import scala.collection.{mutable => m}
 
 object MenuSwitcher {
-  var menuStack: m.Stack[Menu] = m.Stack[Menu](new BaseMenu())
+  var menuStack: m.Stack[Menu] = m.Stack[Menu](BaseMenu)
 
-  def clearConsole(): Unit = {
+  private def clearConsole(): Unit = {
     print("\u001b[2J")
   }
 
-  def addMenu(menu: Menu): Unit = {
+  def goForward(menu: Menu): Unit = {
     menuStack.push(menu)
+  }
+
+  def goBack(): Unit = {
+    menuStack.pop()
   }
 
   def showMenu(): Boolean = {
@@ -22,7 +26,7 @@ object MenuSwitcher {
     currentMenu.display()
 
     // Wait for user input
-    if (!currentMenu.handleInput(scala.io.StdIn.readLine())) menuStack.pop()
+    currentMenu.handleInput(scala.io.StdIn.readLine())
 
     menuStack.size < 1
   }

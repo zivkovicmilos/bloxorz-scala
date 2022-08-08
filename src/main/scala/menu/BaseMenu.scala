@@ -1,6 +1,10 @@
 package menu
 
-class BaseMenu extends Menu {
+import game.GameMenu
+import maps.MapsMenu
+import solver.SolverMenu
+
+object BaseMenu extends Menu {
   override def display(): Unit = {
     MenuPrinter.printMenu(
       "Base Menu",
@@ -13,9 +17,13 @@ class BaseMenu extends Menu {
     )
   }
 
-  override def handleInput(input: String): Boolean = {
-    println("The chosen option is " + input)
-
-    input != "4"
+  override def handleInput(input: String): Unit = {
+    input match {
+      case "1" => MenuSwitcher.goForward(GameMenu)
+      case "2" => MenuSwitcher.goForward(MapsMenu)
+      case "3" => MenuSwitcher.goForward(SolverMenu)
+      case "4" => MenuSwitcher.goBack()
+      case _ =>
+    }
   }
 }

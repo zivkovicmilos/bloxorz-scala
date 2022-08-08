@@ -7,5 +7,5 @@ trait Menu {
   def display(): Unit
 
   // Handles the user input
-  def handleInput(input: String): Boolean
+  def handleInput(input: String): Unit
 }
