@@ -24,4 +24,28 @@ object FieldType extends Enumeration {
       case _ => " "
     }
   }
+
+  def getType(field: Char): FieldType = {
+    field match {
+      case '-' => VOID
+      case 'S' => START
+      case 'T' => TARGET
+      case '.' => SPECIAL
+      case 'o' => GROUND
+      case 'x' => BLOCK
+      case _ => VOID
+    }
+  }
+
+  def getColor(fieldType: FieldType): String = {
+    fieldType match {
+      case VOID => Console.WHITE
+      case START => Console.CYAN
+      case TARGET => Console.RED
+      case SPECIAL => Console.YELLOW
+      case GROUND => Console.GREEN
+      case BLOCK => Console.WHITE
+      case _ => Console.RESET
+    }
+  }
 }

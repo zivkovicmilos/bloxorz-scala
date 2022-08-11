@@ -26,6 +26,7 @@ object MenuSwitcher {
     currentMenu.display()
 
     // Wait for user input
+    print("> ")
     currentMenu.handleInput(scala.io.StdIn.readLine())
 
     menuStack.size < 1
