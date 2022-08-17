@@ -66,6 +66,6 @@ object MapsManager {
       throw new Error("invalid map selected")
     }
 
-    loadedMaps(index - 1)
+    loadedMaps(index - 1).map(_.clone)
   }
 }
