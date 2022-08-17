@@ -33,8 +33,13 @@ object GameMenu extends menu.Menu {
     val backItem = numMenuItems.toString
 
     input match {
-      case backItem => menu.MenuSwitcher.goBack()
-      case _ =>
+      case "2" => menu.MenuSwitcher.goBack() // TODO fix this option
+      case selectedMap => {
+        // TODO handle bad input
+        PlayMapMenu.setSelectedMap(selectedMap.toInt)
+
+        menu.MenuSwitcher.goForward(PlayMapMenu)
+      }
     }
   }
 }

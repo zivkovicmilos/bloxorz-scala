@@ -7,6 +7,9 @@ import scala.io.Source
 object MapsManager {
   var loadedMaps: ArrayBuffer[Array[Array[BoardField]]] = ArrayBuffer[Array[Array[BoardField]]]()
   val mapPrefix = "map_"
+  val mapFiles: List[String] = List[String](
+    "map_1.txt"
+  )
 
   def getListOfFiles(dir: File): List[File] = {
     dir.listFiles.filter(_.isFile).toList.filter { file =>
@@ -18,17 +21,18 @@ object MapsManager {
     loadedMaps.length
   }
 
-  def addMap(mapFile: File): Unit = {
+  def addMap(mapFile: String): Unit = {
     loadedMaps += loadMap(mapFile)
   }
 
-  def loadMap(mapFile: File): Array[Array[BoardField]] = {
-    val source = Source.fromFile(mapFile)
+  def loadMap(mapFile: String): Array[Array[BoardField]] = {
+    val resource = Source.fromResource(mapFile)
+
     var x = 0
     val result: ArrayBuffer[Array[BoardField]] = ArrayBuffer[Array[BoardField]]()
 
     // TODO handle malformed files
-    for (line <- source.getLines) {
+    for (line <- resource.getLines) {
       val row: ArrayBuffer[BoardField] = ArrayBuffer[BoardField]()
 
       var y = 0
@@ -42,26 +46,26 @@ object MapsManager {
       x += 1
     }
 
-    source.close()
+    resource.close()
 
     result.toArray
   }
 
   def loadMaps(): Unit = {
-    val mapFiles = getListOfFiles(
-      new File(
-        getClass.getResource("/maps").getPath
-      )
-    )
-
-    if (mapFiles.size < 1) {
-      return
-    }
+    // TODO handle map loading errors
 
     for (
       mapFile <- mapFiles
     ) {
       loadedMaps += loadMap(mapFile)
     }
+  }
+
+  def getMap(index: Int): Array[Array[BoardField]] = {
+    if (index > loadedMaps.length) {
+      throw new Error("invalid map selected")
+    }
+
+    loadedMaps(index - 1)
   }
 }

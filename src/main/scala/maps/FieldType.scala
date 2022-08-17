@@ -44,7 +44,7 @@ object FieldType extends Enumeration {
       case TARGET => Console.RED
       case SPECIAL => Console.YELLOW
       case GROUND => Console.GREEN
-      case BLOCK => Console.WHITE
+      case BLOCK => Console.MAGENTA
       case _ => Console.RESET
     }
   }
