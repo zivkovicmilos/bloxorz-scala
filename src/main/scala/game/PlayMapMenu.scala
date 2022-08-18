@@ -24,15 +24,24 @@ object PlayMapMenu extends menu.Menu {
 
   override def handleInput(input: String): Unit = {
     input match {
-      case "1" => {
+      case "1" =>
         val map = new maps.Map(MapsManager.getMap(selectedMap))
         map.initializePlayer()
 
         menu.MenuSwitcher.goForward(new PlayMenu(map))
-      }
-      case "2" =>
+      case "2" => playGameWithFile()
       case "3" => menu.MenuSwitcher.goBack()
       case _ =>
     }
+  }
+
+  def playGameWithFile(): Unit = {
+    print("File name: ")
+    val fileName = scala.io.StdIn.readLine()
+
+    val map = new maps.Map(MapsManager.getMap(selectedMap))
+    map.initializePlayer()
+
+    menu.MenuSwitcher.goForward(new PlayMenuFile(map, fileName))
   }
 }

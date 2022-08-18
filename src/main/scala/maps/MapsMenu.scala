@@ -21,6 +21,7 @@ object MapsMenu extends Menu {
   }
 
   def loadMapFromFile(): Unit = {
+    print("File name: ")
     val fileName = scala.io.StdIn.readLine()
     MapsManager.addMap(fileName)
 
