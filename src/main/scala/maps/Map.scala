@@ -4,16 +4,16 @@ import game.GameStatus.{FAILURE, GameStatus, ONGOING, SUCCESS}
 import maps.Movement.{DOWN, LEFT, Movement, RIGHT, UP}
 
 class Map(map: Array[Array[BoardField]]) {
-  var playerPosition: Position = Position(0, 0)
-  var coveredField: BoardField = BoardField(FieldType.START, 0, 0)
+  var player: Player = new Player(Position(0, 0))
+  var coveredFieldA: BoardField = BoardField(FieldType.START, 0, 0)
+  var coveredFieldB: BoardField = BoardField(FieldType.START, 0, 0)
+
 
   def drawMap(): Unit = {
     MapDrawer.drawMap(map)
   }
 
   def initializePlayer(): Unit = {
-    println(f"Map dimensions are y: ${map.length} x: ${map(0).length}")
-
     for {
       y <- map.indices
     } {
@@ -21,8 +21,9 @@ class Map(map: Array[Array[BoardField]]) {
         x <- map(y).indices
       } {
         if (map(y)(x).fieldType == FieldType.START) {
-          playerPosition = Position(x, y)
-          coveredField = BoardField(FieldType.START, x, y)
+          player = new Player(Position(x, y))
+          coveredFieldA = BoardField(FieldType.START, x, y)
+          coveredFieldB = BoardField(FieldType.START, x, y)
           map(y)(x) = BoardField(FieldType.BLOCK, x, y)
 
           return
@@ -36,47 +37,54 @@ class Map(map: Array[Array[BoardField]]) {
 
   def movePlayer(move: Movement): Unit = {
     if (isAllowedMove(move)) {
-      val prevX = playerPosition.x
-      val prevY = playerPosition.y
+      val prevX1 = player.a.x
+      val prevY1 = player.a.y
 
-      println(f"Previous positions $prevX $prevY")
+      val prevX2 = player.b.x
+      val prevY2 = player.b.y
 
-      playerPosition.move(move)
+      player.move(move)
 
-      val x = playerPosition.x
-      val y = playerPosition.y
+      val x1 = player.a.x
+      val y1 = player.a.y
 
-      println(f"New positions $x $y")
+      val x2 = player.b.x
+      val y2 = player.b.y
 
 
-      map(prevY)(prevX) = coveredField
-      coveredField = map(y)(x)
-      map(y)(x) = BoardField(FieldType.BLOCK, x, y)
+      map(prevY1)(prevX1) = coveredFieldA
+      map(prevY2)(prevX2) = coveredFieldB
+
+      coveredFieldA = map(y1)(x1)
+      coveredFieldB = map(y2)(x2)
+
+      map(y1)(x1) = BoardField(FieldType.BLOCK, x1, y1)
+      map(y2)(x2) = BoardField(FieldType.BLOCK, x2, y2)
     }
   }
 
   private def isAllowedMove(move: Movement): Boolean = {
     move match {
-      case UP => playerPosition.y > 0
-      case DOWN => playerPosition.y + 1 < map.length
-      case LEFT => playerPosition.x > 0
-      case RIGHT => playerPosition.x + 1 < map(0).length
+      case UP => player.a.y > 0 || player.b.y > 0
+      case DOWN => player.a.y + 1 < map.length || player.b.y + 1 < map.length
+      case LEFT => player.a.x > 0 || player.b.x > 0
+      case RIGHT => player.a.x + 1 < map(0).length || player.b.x + 1 < map(0).length
     }
   }
 
   def getGameStatus: GameStatus = {
     // Check if the target has been reached
-    if (coveredField.fieldType == FieldType.TARGET) {
+    if (coveredFieldA.fieldType == FieldType.TARGET && player.isUpright) {
       return SUCCESS
     }
 
     // Check if the player is out of bounds
-    if (coveredField.fieldType == FieldType.VOID) {
+    if ((coveredFieldA.fieldType == FieldType.VOID) || (coveredFieldB.fieldType == FieldType.VOID)) {
       return FAILURE
     }
 
     // Check if the player is on a special tile
-    if (coveredField.fieldType == FieldType.SPECIAL) {
+    if (coveredFieldA.fieldType == FieldType.SPECIAL && player.isUpright) {
       return FAILURE
     }
 

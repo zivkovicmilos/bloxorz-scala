@@ -30,4 +30,28 @@ case class Position(var x: Int, var y: Int) {
   private def moveRight(): Unit = {
     x += 1
   }
+
+  def isSameColumn(position: Position): Boolean = {
+    x == position.x
+  }
+
+  def isSameRow(position: Position): Boolean = {
+    y == position.y
+  }
+
+  def isRightTo(position: Position): Boolean = {
+    x > position.x
+  }
+
+  def isLeftTo(position: Position): Boolean = {
+    !isRightTo(position)
+  }
+
+  def isUpTo(position: Position): Boolean = {
+    y < position.y
+  }
+
+  def isDownTo(position: Position): Boolean = {
+    !isUpTo(position)
+  }
 }
