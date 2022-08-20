@@ -1,9 +1,10 @@
 package editor
 
 import maps.FieldType.{FieldType, GROUND, SPECIAL, START, TARGET, VOID}
-import maps.{BoardField, Position}
+import maps.{BoardField, FieldType, MapsManager, Position}
 import menu.MenuPrinter
 
+import java.io.{BufferedWriter, File, FileWriter}
 import scala.collection.mutable.ListBuffer
 
 class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
@@ -11,15 +12,16 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
   // TODO add save option
   val menuItems: ListBuffer[String] = ListBuffer[String](
-    EditOperation.getOperationDescription(EditOperation.REMOVE_TILE), // DONE
-    EditOperation.getOperationDescription(EditOperation.ADD_TILE), // DONE
-    EditOperation.getOperationDescription(EditOperation.SWAP_WITH_SPECIAL), // DONE
-    EditOperation.getOperationDescription(EditOperation.SWAP_WITH_REGULAR), // DONE
-    EditOperation.getOperationDescription(EditOperation.SET_START), // DONE
-    EditOperation.getOperationDescription(EditOperation.SET_TARGET), // DONE
-    EditOperation.getOperationDescription(EditOperation.INVERT), // DONE
-    EditOperation.getOperationDescription(EditOperation.SWAP_ALL_SPECIAL), // DONE
-    EditOperation.getOperationDescription(EditOperation.FILTER_SPECIAL), // DONE
+    "Save Modified Map",
+    EditOperation.getOperationDescription(EditOperation.REMOVE_TILE),
+    EditOperation.getOperationDescription(EditOperation.ADD_TILE),
+    EditOperation.getOperationDescription(EditOperation.SWAP_WITH_SPECIAL),
+    EditOperation.getOperationDescription(EditOperation.SWAP_WITH_REGULAR),
+    EditOperation.getOperationDescription(EditOperation.SET_START),
+    EditOperation.getOperationDescription(EditOperation.SET_TARGET),
+    EditOperation.getOperationDescription(EditOperation.INVERT),
+    EditOperation.getOperationDescription(EditOperation.SWAP_ALL_SPECIAL),
+    EditOperation.getOperationDescription(EditOperation.FILTER_SPECIAL),
     // TODO add support for creating new operation sequences
     // TODO add support for creating a composite operation from swap + invert + composites
   )
@@ -41,19 +43,49 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
       input match {
         // TODO handle this better
         case "back" => menu.MenuSwitcher.goBack()
-        case "1" => convertTile(GROUND, VOID)
-        case "2" => convertTile(VOID, GROUND)
-        case "3" => swapFields(GROUND, SPECIAL)
-        case "4" => swapFields(SPECIAL, GROUND)
-        case "5" => swapFieldWithGround(START)
-        case "6" => swapFieldWithGround(TARGET)
-        case "7" => swapStartAndTarget()
-        case "8" => swapAllSpecial()
-        case "9" => filterSpecial()
+        case "1" => saveMap()
+        case "2" => convertTile(GROUND, VOID)
+        case "3" => convertTile(VOID, GROUND)
+        case "4" => swapFields(GROUND, SPECIAL)
+        case "5" => swapFields(SPECIAL, GROUND)
+        case "6" => swapFieldWithGround(START)
+        case "7" => swapFieldWithGround(TARGET)
+        case "8" => swapStartAndTarget()
+        case "9" => swapAllSpecial()
+        case "10" => filterSpecial()
       }
     } catch {
       case e: Error => feedback = f"Error occurred during map edits: $e"
     }
+  }
+
+  private def saveMap(): Unit = {
+    // Save the map to the Maps Manager
+    MapsManager.loadMap(map)
+
+    // Get the total number of maps
+    val totalMaps = MapsManager.getNumMaps
+
+    val mapName = f"${MapsManager.mapPrefix}$totalMaps.txt"
+
+    val file = new File(mapName)
+    val bw = new BufferedWriter(new FileWriter(file))
+
+    for (
+      row <- map.indices
+    ) {
+      for (
+        column <- map(0).indices
+      ) {
+        val field = map(row)(column)
+
+        bw.write(FieldType.getValue(field.fieldType))
+      }
+    }
+
+    bw.close()
+
+    feedback = f"Map saved as $mapName"
   }
 
   private def filterSpecial(): Unit = {

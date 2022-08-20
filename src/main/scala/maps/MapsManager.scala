@@ -68,4 +68,8 @@ object MapsManager {
 
     loadedMaps(index - 1).map(_.clone)
   }
+
+  def loadMap(map: Array[Array[BoardField]]): Unit = {
+    loadedMaps += map
+  }
 }
