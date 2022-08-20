@@ -3,7 +3,7 @@ package solver
 import maps.Movement.{DOWN, LEFT, Movement, RIGHT, UP}
 import maps._
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 object MapSolver {
   type PossibleMove = (Player, Movement, List[Movement])
@@ -217,6 +217,81 @@ object MapSolver {
   //    //      bw.close()
   //    //    }
   //  }
+
+  // The current player position, the next move, the list of previous movements
+  type PlayerMove = (Player, Movement, ListBuffer[Movement])
+
+  def runSolver(map: Array[Array[BoardField]]): List[Movement] = {
+    // Find the starting position
+    val start = findStartingPosition(map)
+    val startPlayer = new Player(start)
+
+    // All found paths
+    val foundPaths: ListBuffer[ListBuffer[Movement]] = ListBuffer[ListBuffer[Movement]]()
+    val visited: ArrayBuffer[Player] = ArrayBuffer[Player]()
+
+    visited += startPlayer
+
+    var possibleMoves: ListBuffer[PlayerMove] = ListBuffer[PlayerMove]()
+    if (canMove(startPlayer, map, UP)) {
+      possibleMoves += ((startPlayer, UP, ListBuffer[Movement]()))
+    }
+
+    if (canMove(startPlayer, map, DOWN)) {
+      possibleMoves += ((startPlayer, DOWN, ListBuffer[Movement]()))
+    }
+
+    if (canMove(startPlayer, map, RIGHT)) {
+      possibleMoves += ((startPlayer, RIGHT, ListBuffer[Movement]()))
+    }
+
+    if (canMove(startPlayer, map, LEFT)) {
+      possibleMoves += ((startPlayer, LEFT, ListBuffer[Movement]()))
+    }
+
+    while (possibleMoves.nonEmpty) {
+      val possibleMove = possibleMoves.head
+      val p = possibleMove._1.copy()
+      val movement = possibleMove._2
+      val prevMovements = possibleMove._3.clone()
+
+      p.move(movement)
+
+      visited += p
+
+      prevMovements += movement
+
+      if (p.isUpright && map(p.a.y)(p.a.x).fieldType == FieldType.TARGET) {
+        // Add the current path to the list of correct paths
+        foundPaths += prevMovements
+      } else {
+        if (canMove(p, map, UP) && notVisited(visited, p, UP)) {
+          possibleMoves += ((p, UP, prevMovements))
+        }
+
+        if (canMove(p, map, DOWN) && notVisited(visited, p, DOWN)) {
+          possibleMoves += ((p, DOWN, prevMovements))
+        }
+
+        if (canMove(p, map, RIGHT) && notVisited(visited, p, RIGHT)) {
+          possibleMoves += ((p, RIGHT, prevMovements))
+        }
+
+        if (canMove(p, map, LEFT) && notVisited(visited, p, LEFT)) {
+          possibleMoves += ((p, LEFT, prevMovements))
+        }
+      }
+
+      possibleMoves = possibleMoves.tail
+    }
+
+    println(foundPaths)
+    if (foundPaths.nonEmpty) {
+      foundPaths.sortWith((a, b) => a.length < b.length).head.toList
+    } else {
+      List[Movement]()
+    }
+  }
 
   private def canMove(player: Player, map: Array[Array[BoardField]], movement: Movement): Boolean = {
     val p = player.copy()

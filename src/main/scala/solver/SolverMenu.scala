@@ -1,6 +1,6 @@
 package solver
 
-import maps.MapsManager
+import maps.{MapDrawer, MapsManager}
 import menu.{Menu, MenuPrinter}
 
 import scala.collection.mutable.ListBuffer
@@ -36,11 +36,11 @@ object SolverMenu extends Menu {
       case "2" => menu.MenuSwitcher.goBack() // TODO fix this option
       case _ => {
         // TODO remove print
-        //        MapDrawer.drawMap(MapsManager.getMap(1))
-        //
-        //        val solution = MapSolver.solveMap(MapsManager.getMap(1))
-        //
-        //        println(solution)
+        MapDrawer.drawMap(MapsManager.getMap(1))
+
+        val solution = MapSolver.runSolver(MapsManager.getMap(1))
+
+        println(solution)
       }
     }
   }
