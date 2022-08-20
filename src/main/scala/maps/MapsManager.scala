@@ -37,7 +37,7 @@ object MapsManager {
 
       var y = 0
       for (char <- line) {
-        row += BoardField(FieldType.getType(char), x, y)
+        row += BoardField(FieldType.getType(char), Position(x, y))
 
         y += 1
       }

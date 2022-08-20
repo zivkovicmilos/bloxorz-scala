@@ -54,4 +54,12 @@ case class Position(var x: Int, var y: Int) {
   def isDownTo(position: Position): Boolean = {
     !isUpTo(position)
   }
+
+  def columnDistance(position: Position): Int = {
+    Math.abs(x - position.x)
+  }
+
+  def rowDistance(position: Position): Int = {
+    Math.abs(y - position.y)
+  }
 }

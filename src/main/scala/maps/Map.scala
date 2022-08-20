@@ -5,8 +5,8 @@ import maps.Movement.{DOWN, LEFT, Movement, RIGHT, UP}
 
 class Map(map: Array[Array[BoardField]]) {
   var player: Player = new Player(Position(0, 0))
-  var coveredFieldA: BoardField = BoardField(FieldType.START, 0, 0)
-  var coveredFieldB: BoardField = BoardField(FieldType.START, 0, 0)
+  var coveredFieldA: BoardField = BoardField(FieldType.START, Position(0, 0))
+  var coveredFieldB: BoardField = BoardField(FieldType.START, Position(0, 0))
 
 
   def drawMap(): Unit = {
@@ -22,9 +22,9 @@ class Map(map: Array[Array[BoardField]]) {
       } {
         if (map(y)(x).fieldType == FieldType.START) {
           player = new Player(Position(x, y))
-          coveredFieldA = BoardField(FieldType.START, x, y)
-          coveredFieldB = BoardField(FieldType.START, x, y)
-          map(y)(x) = BoardField(FieldType.BLOCK, x, y)
+          coveredFieldA = BoardField(FieldType.START, Position(x, y))
+          coveredFieldB = BoardField(FieldType.START, Position(x, y))
+          map(y)(x) = BoardField(FieldType.BLOCK, Position(x, y))
 
           return
         }
@@ -58,8 +58,8 @@ class Map(map: Array[Array[BoardField]]) {
       coveredFieldA = map(y1)(x1)
       coveredFieldB = map(y2)(x2)
 
-      map(y1)(x1) = BoardField(FieldType.BLOCK, x1, y1)
-      map(y2)(x2) = BoardField(FieldType.BLOCK, x2, y2)
+      map(y1)(x1) = BoardField(FieldType.BLOCK, Position(x1, y1))
+      map(y2)(x2) = BoardField(FieldType.BLOCK, Position(x2, y2))
     }
   }
 

@@ -155,4 +155,13 @@ class Player(position: Position) {
 
     rollRight()
   }
+
+  // TODO remove
+  def copy(): Player = {
+    val p = new Player(Position(0, 0))
+    p.a = a.copy()
+    p.b = b.copy()
+
+    p
+  }
 }

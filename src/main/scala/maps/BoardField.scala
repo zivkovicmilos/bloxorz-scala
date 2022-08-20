@@ -3,7 +3,7 @@ package maps
 import maps.FieldType.FieldType
 
 // Represents a single board field
-case class BoardField(fieldType: FieldType, x: Int, y: Int) {
+case class BoardField(fieldType: FieldType, position: Position) {
   def getBoardField: Array[Array[String]] = {
     val color = FieldType.getColor(fieldType)
 
@@ -14,7 +14,7 @@ case class BoardField(fieldType: FieldType, x: Int, y: Int) {
     )
   }
 
-  def getCoordinates: (Int, Int) = {
-    (x, y)
+  def getPosition: Position = {
+    position
   }
 }

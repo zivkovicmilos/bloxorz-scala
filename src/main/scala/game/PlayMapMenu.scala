@@ -19,7 +19,6 @@ object PlayMapMenu extends menu.Menu {
         "Back"
       )
     )
-
   }
 
   override def handleInput(input: String): Unit = {
