@@ -24,7 +24,7 @@ object DefaultOperation extends Enumeration {
       case SAVE_MAP => "Save map"
       case DEFINE_OPERATION_LIST => "Define op. list"
       case REMOVE_TILE => "Remove tile (edge)"
-      case ADD_TILE => "Add tile (edge)"
+      case ADD_TILE => "Add tile (ground)"
       case SWAP_WITH_SPECIAL => "Ground -> Special"
       case SWAP_WITH_REGULAR => "Special -> Ground"
       case SET_START => "Set start"

@@ -29,8 +29,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     },
     new EditOperation {
       override def run(): Unit = {
-        // TODO fix this
-        convertTile(VOID, GROUND)
+        addTileToEdge()
       }
 
       override def getName: String = DefaultOperation.getName(ADD_TILE)
@@ -306,6 +305,51 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     setBoardField(initialField, GROUND)
 
     feedback = f"Tile at position ${position.x}, ${position.y} set to $fieldType"
+  }
+
+  private def addTileToEdge(): Unit = {
+    val position = getAndVerifyCoordinates()
+
+    // Check if the field is right
+    if (!isFieldType(position, VOID)) {
+      throw new Error(f"Selected field is not of $VOID type")
+    }
+
+    // Check if any neighbors are edge tiles
+
+    // Find all regular edge-ground tiles
+    // Define the check function
+    val checkFn = (field: BoardField) => isEdge(field) && isFieldType(field.position, GROUND)
+
+    // Check if there are multiple candidates for removing
+    val candidates = getFieldCandidates(checkFn)
+
+    if (candidates.isEmpty) {
+      throw new Error("No possible ground tile candidates found")
+    }
+
+    if (!neighborsInsSet(position, candidates)) {
+      throw new Error("No possible void tile candidates found")
+    }
+
+    setBoardField(position, GROUND)
+  }
+
+  private def neighborsInsSet(position: Position, set: List[BoardField]): Boolean = {
+    val leftNeighbor = Position(position.x - 1, position.y)
+    val rightNeighbor = Position(position.x + 1, position.y)
+    val upNeighbor = Position(position.x, position.y - 1)
+    val downNeighbor = Position(position.x, position.y + 1)
+
+    for (
+      neighbor <- set
+    ) {
+      if (neighbor.position == leftNeighbor || neighbor.position == rightNeighbor || neighbor.position == upNeighbor || neighbor.position == downNeighbor) {
+        return true
+      }
+    }
+
+    false
   }
 
   private def convertTile(removeType: FieldType, addType: FieldType): Unit = {
