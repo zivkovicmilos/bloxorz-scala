@@ -1,5 +1,6 @@
 package editor
 
+import editor.DefaultOperation.{ADD_TILE, DEFINE_OPERATION_LIST, FILTER_SPECIAL, INVERT, REMOVE_TILE, SAVE_MAP, SET_START, SET_TARGET, SWAP_ALL_SPECIAL, SWAP_WITH_REGULAR, SWAP_WITH_SPECIAL}
 import maps.FieldType.{FieldType, GROUND, SPECIAL, START, TARGET, VOID}
 import maps._
 import menu.MenuPrinter
@@ -10,29 +11,100 @@ import scala.collection.mutable.ListBuffer
 class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
   var feedback: String = ""
 
-  // TODO add save option
-  val menuItems: ListBuffer[String] = ListBuffer[String](
-    "Save Modified Map",
-    EditOperation.getOperationDescription(EditOperation.REMOVE_TILE),
-    EditOperation.getOperationDescription(EditOperation.ADD_TILE),
-    EditOperation.getOperationDescription(EditOperation.SWAP_WITH_SPECIAL),
-    EditOperation.getOperationDescription(EditOperation.SWAP_WITH_REGULAR),
-    EditOperation.getOperationDescription(EditOperation.SET_START),
-    EditOperation.getOperationDescription(EditOperation.SET_TARGET),
-    EditOperation.getOperationDescription(EditOperation.INVERT),
-    EditOperation.getOperationDescription(EditOperation.SWAP_ALL_SPECIAL),
-    EditOperation.getOperationDescription(EditOperation.FILTER_SPECIAL),
-    // TODO add support for creating new operation sequences
-    // TODO add support for creating a composite operation from swap + invert + composites
+  val availableOperations: ListBuffer[EditOperation] = ListBuffer[EditOperation](
+    // Define basic operations
+    new EditOperation {
+      override def run(): Unit = {
+        saveMap()
+      }
+
+      override def getName: String = DefaultOperation.getName(SAVE_MAP)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        convertTile(GROUND, VOID)
+      }
+
+      override def getName: String = DefaultOperation.getName(REMOVE_TILE)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        // TODO fix this
+        convertTile(VOID, GROUND)
+      }
+
+      override def getName: String = DefaultOperation.getName(ADD_TILE)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        swapFields(GROUND, SPECIAL)
+      }
+
+      override def getName: String = DefaultOperation.getName(SWAP_WITH_SPECIAL)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        swapFields(SPECIAL, GROUND)
+      }
+
+      override def getName: String = DefaultOperation.getName(SWAP_WITH_REGULAR)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        swapFieldWithGround(START)
+      }
+
+      override def getName: String = DefaultOperation.getName(SET_START)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        swapFieldWithGround(TARGET)
+      }
+
+      override def getName: String = DefaultOperation.getName(SET_TARGET)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        swapStartAndTarget()
+      }
+
+      override def getName: String = DefaultOperation.getName(INVERT)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        swapAllSpecial()
+      }
+
+      override def getName: String = DefaultOperation.getName(SWAP_ALL_SPECIAL)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        filterSpecial()
+      }
+
+      override def getName: String = DefaultOperation.getName(FILTER_SPECIAL)
+    },
+    new EditOperation {
+      override def run(): Unit = {
+        defineOperationList()
+      }
+
+      override def getName: String = DefaultOperation.getName(DEFINE_OPERATION_LIST)
+    }
   )
 
   override def display(): Unit = {
     MapDrawer.drawMap(map)
 
+    val menuItems = for (operation <- availableOperations) yield operation.getName
+
+    menuItems += "Back"
+
     MenuPrinter.printMenu(
       "Edit Selected Map",
       menuItems.toList
     )
+
     if (feedback != "") {
       println(feedback)
     }
@@ -44,21 +116,58 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     try {
       input match {
         // TODO handle this better
-        case "back" => menu.MenuSwitcher.goBack()
-        case "1" => saveMap()
-        case "2" => convertTile(GROUND, VOID)
-        case "3" => convertTile(VOID, GROUND)
-        case "4" => swapFields(GROUND, SPECIAL)
-        case "5" => swapFields(SPECIAL, GROUND)
-        case "6" => swapFieldWithGround(START)
-        case "7" => swapFieldWithGround(TARGET)
-        case "8" => swapStartAndTarget()
-        case "9" => swapAllSpecial()
-        case "10" => filterSpecial()
+        case x if x.forall(Character.isDigit) && x.toInt == availableOperations.size + 1 => menu.MenuSwitcher.goBack()
+        case n =>
+          if (n.forall(Character.isDigit) && n.toInt <= availableOperations.size) {
+            val selectedOp = n.toInt
+
+            availableOperations(selectedOp - 1).run()
+          }
       }
     } catch {
       case e: Error => feedback = f"Error occurred during map edits: $e"
     }
+  }
+
+  private def defineOperationList(): Unit = {
+    print("New list name: ")
+    val listName = scala.io.StdIn.readLine()
+
+    print("Desired operations in list (format: x y z...): ")
+    val requestedOperations = scala.io.StdIn.readLine()
+
+    val operations = requestedOperations.split(" ")
+    val operationsList = ListBuffer[EditOperation]()
+
+    for (
+      requestedOp <- operations
+    ) {
+      if (!requestedOp.forall(Character.isDigit)) {
+        throw new Error("Invalid requested operation value specified!")
+      }
+
+      val opInt = requestedOp.toInt
+
+      if (opInt > availableOperations.size) {
+        throw new Error("Invalid operation selected")
+      }
+
+      operationsList += availableOperations(opInt - 1)
+    }
+
+    availableOperations += new EditOperation {
+      override def run(): Unit = {
+        for (
+          op <- operationsList
+        ) {
+          op.run()
+        }
+      }
+
+      override def getName: String = listName
+    }
+
+    feedback = f"Created a new operation list: $listName"
   }
 
   private def saveMap(): Unit = {
