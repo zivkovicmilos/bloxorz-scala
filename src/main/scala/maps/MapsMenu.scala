@@ -33,6 +33,7 @@ object MapsMenu extends Menu {
 
     input match {
       case "1" => loadMapFromFile()
+      case "2" => MenuSwitcher.goForward(editor.EditorMenu)
       case "3" => MenuSwitcher.goBack()
       case _ =>
     }

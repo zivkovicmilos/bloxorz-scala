@@ -28,6 +28,7 @@ object EditorMenu extends menu.Menu {
       // TODO handle this better
       case "back" => menu.MenuSwitcher.goBack()
       case n =>
+        menu.MenuSwitcher.goForward(new EditMapMenu(MapsManager.getMap(1)))
     }
   }
 }

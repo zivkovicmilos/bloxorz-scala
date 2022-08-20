@@ -1,7 +1,7 @@
 package editor
 
 import maps.FieldType.{FieldType, GROUND, SPECIAL, START, TARGET, VOID}
-import maps.{BoardField, FieldType, MapsManager, Position}
+import maps._
 import menu.MenuPrinter
 
 import java.io.{BufferedWriter, File, FileWriter}
@@ -27,6 +27,8 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
   )
 
   override def display(): Unit = {
+    MapDrawer.drawMap(map)
+
     MenuPrinter.printMenu(
       "Edit Selected Map",
       menuItems.toList
@@ -75,12 +77,14 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
       row <- map.indices
     ) {
       for (
-        column <- map(0).indices
+        column <- map(row).indices
       ) {
         val field = map(row)(column)
 
         bw.write(FieldType.getValue(field.fieldType))
       }
+
+      bw.write('\n')
     }
 
     bw.close()
@@ -192,7 +196,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     setBoardField(position, fieldType)
     setBoardField(initialField, GROUND)
 
-    feedback = f"Tile at position ${position.x}, ${position.y} set to $GROUND"
+    feedback = f"Tile at position ${position.x}, ${position.y} set to $fieldType"
   }
 
   private def convertTile(removeType: FieldType, addType: FieldType): Unit = {
@@ -229,9 +233,9 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
   private def getAndVerifyCoordinates(): Position = {
     // Wait for the user's input
-    print("Tile (x):")
+    print("Tile (x): ")
     val x = scala.io.StdIn.readLine()
-    print("Tile(y):")
+    print("Tile (y): ")
     val y = scala.io.StdIn.readLine()
 
     // Make sure the numbers are valid and in bounds
@@ -259,7 +263,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
       row <- map.indices
     ) {
       for (
-        column <- map.indices
+        column <- map(row).indices
       ) {
         val field = map(row)(column)
 

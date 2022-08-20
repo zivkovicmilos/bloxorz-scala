@@ -36,16 +36,16 @@ object EditOperation extends Enumeration {
 
   def getOperationDescription(operation: EditOperation): String = {
     operation match {
-      case REMOVE_TILE => "Remove tile from the edge"
-      case ADD_TILE => "Add tile to the edge"
-      case SWAP_WITH_SPECIAL => "Make a normal tile special"
-      case SWAP_WITH_REGULAR => "Make a special tile normal"
-      case SET_START => "Set start position"
-      case SET_TARGET => "Set target position"
-      case INVERT => "Invert start and target"
+      case REMOVE_TILE => "Remove tile (edge)"
+      case ADD_TILE => "Add tile (edge)"
+      case SWAP_WITH_SPECIAL => "Ground -> Special"
+      case SWAP_WITH_REGULAR => "Special -> Ground"
+      case SET_START => "Set start"
+      case SET_TARGET => "Set target"
+      case INVERT => "Start <-> Target"
       case SWAP_ALL_SPECIAL => "Swap special tiles"
-      case FILTER_SPECIAL => "Filter special tiles"
-      case _ => throw new Error("Unknown move")
+      case FILTER_SPECIAL => "Filter"
+      case _ => throw new Error("Unknown operation")
     }
   }
 }

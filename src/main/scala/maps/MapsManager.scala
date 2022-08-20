@@ -28,22 +28,22 @@ object MapsManager {
   def loadMap(mapFile: String): Array[Array[BoardField]] = {
     val resource = Source.fromResource(mapFile)
 
-    var x = 0
+    var y = 0
     val result: ArrayBuffer[Array[BoardField]] = ArrayBuffer[Array[BoardField]]()
 
     // TODO handle malformed files
     for (line <- resource.getLines) {
       val row: ArrayBuffer[BoardField] = ArrayBuffer[BoardField]()
 
-      var y = 0
+      var x = 0
       for (char <- line) {
         row += BoardField(FieldType.getType(char), Position(x, y))
 
-        y += 1
+        x += 1
       }
 
       result += row.toArray
-      x += 1
+      y += 1
     }
 
     resource.close()
