@@ -1,8 +1,10 @@
 package solver
 
-import maps.{MapDrawer, MapsManager}
+import maps.Movement.Movement
+import maps.{MapDrawer, MapsManager, Movement}
 import menu.{Menu, MenuPrinter}
 
+import java.io.{BufferedWriter, File, FileWriter}
 import scala.collection.mutable.ListBuffer
 
 object SolverMenu extends Menu {
@@ -40,9 +42,22 @@ object SolverMenu extends Menu {
 
         val solution = MapSolver.runSolver(MapsManager.getMap(1))
 
-        println(solution)
+        saveSolution(solution, 1)
       }
     }
+  }
+
+  private def saveSolution(solution: List[Movement], mapIndex: Int): Unit = {
+    val file = new File(f"${MapsManager.mapPrefix}${mapIndex}_solution.txt")
+    val bw = new BufferedWriter(new FileWriter(file))
+
+    for (
+      move <- solution
+    ) {
+      bw.write(f"${Movement.getMovementCharacter(move)}\n")
+    }
+
+    bw.close()
   }
 }
 
