@@ -171,7 +171,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
   private def saveMap(): Unit = {
     // Save the map to the Maps Manager
-    MapsManager.loadMap(map)
+    MapsManager.appendMap(map)
 
     // Get the total number of maps
     val totalMaps = MapsManager.getNumMaps

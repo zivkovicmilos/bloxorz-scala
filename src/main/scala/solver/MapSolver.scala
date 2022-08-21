@@ -1,5 +1,6 @@
 package solver
 
+import maps.FieldType.START
 import maps.Movement.{DOWN, LEFT, Movement, RIGHT, UP}
 import maps._
 
@@ -12,7 +13,7 @@ object MapSolver {
 
   def runSolverIterative(map: Array[Array[BoardField]]): List[Movement] = {
     // Find the starting position
-    val start = findStartingPosition(map)
+    val start = maps.MapsManager.findFieldPosition(map, START)
     val startPlayer = new Player(start)
 
     // All found paths
@@ -84,7 +85,7 @@ object MapSolver {
 
   def runSolver(map: Array[Array[BoardField]]): List[Movement] = {
     // Find the starting position
-    val start = findStartingPosition(map)
+    val start = maps.MapsManager.findFieldPosition(map, START)
     val startPlayer = new Player(start)
 
     // All found paths
@@ -215,23 +216,4 @@ object MapSolver {
 
     true
   }
-
-
-  private def findStartingPosition(map: Array[Array[BoardField]]): Position = {
-    for (
-      row <- map.indices
-    ) {
-      for (
-        column <- map(row).indices
-      ) {
-        if (map(row)(column).fieldType == FieldType.START) {
-          return map(row)(column).position
-        }
-      }
-    }
-
-    // TODO handle this in event loading
-    throw new Error("Map is missing a starting point")
-  }
-
 }

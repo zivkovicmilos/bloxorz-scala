@@ -2,12 +2,8 @@ import maps.MapsManager
 import menu.MenuSwitcher
 
 object Main extends App {
-  var shouldExit = false
-
-  // Initialize present maps
+  // Initialize predefined maps
   MapsManager.loadMaps()
 
-  while (!shouldExit) {
-    shouldExit = MenuSwitcher.showMenu()
-  }
+  while (!MenuSwitcher.showMenu()) {}
 }

@@ -9,7 +9,6 @@ class PlayMenu(map: maps.Map) extends menu.Menu {
   override def display(): Unit = {
     map.drawMap()
 
-    // TODO check if the game is over
     if (map.getGameStatus == GameStatus.SUCCESS) {
       println("Game is successfully finished! Press any key to go back.")
       gameOver = true
@@ -19,8 +18,6 @@ class PlayMenu(map: maps.Map) extends menu.Menu {
       println("Game failed! Press any key to go back.")
       gameOver = true
     }
-
-    // TODO display a message if the game is over
   }
 
   override def handleInput(input: String): Unit = {
@@ -38,7 +35,5 @@ class PlayMenu(map: maps.Map) extends menu.Menu {
         case _ => MenuSwitcher.goBack()
       }
     }
-
-    // TODO handle only back input if the game is over
   }
 }

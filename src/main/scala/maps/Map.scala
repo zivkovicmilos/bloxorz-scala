@@ -30,9 +30,6 @@ class Map(map: Array[Array[BoardField]]) {
         }
       }
     }
-
-    // TODO move this check to the map loader
-    throw new Error("No start position")
   }
 
   def movePlayer(move: Movement): Unit = {

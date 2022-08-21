@@ -1,6 +1,5 @@
 package editor
 
-// TODO make this a trait
 // Defines the different types of player movements
 object DefaultOperation extends Enumeration {
   type DefaultOperation = Value

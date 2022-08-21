@@ -23,9 +23,14 @@ object MapsMenu extends Menu {
   def loadMapFromFile(): Unit = {
     print("File name: ")
     val fileName = scala.io.StdIn.readLine()
-    MapsManager.addMap(fileName)
 
-    feedback = "Map successfully added!\n"
+    try {
+      MapsManager.addMapFromFile(fileName)
+
+      feedback = "Map successfully added!\n"
+    } catch {
+      case e: Error => feedback = f"Unable to add specified map file: ${e.getMessage}"
+    }
   }
 
   override def handleInput(input: String): Unit = {
