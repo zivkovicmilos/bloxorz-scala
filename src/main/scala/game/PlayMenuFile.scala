@@ -1,73 +1,54 @@
 package game
 
-import maps.Movement
+import game.GameStatus.{FAILURE, GameStatus, ONGOING, SUCCESS}
 import maps.Movement.Movement
 import menu.MenuSwitcher
 
-import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
-import scala.util.control.Breaks.{break, breakable}
+import scala.annotation.tailrec
 
-class PlayMenuFile(map: maps.Map, fileName: String) extends menu.Menu {
-  var gameOver: Boolean = false
-
-  def loadMovements(): Array[Movement] = {
-    val movementArr = ArrayBuffer[Movement]()
-    val resource = Source.fromResource(fileName)
-
-    // TODO handle malformed files
-    for (line <- resource.getLines) {
-      movementArr += Movement.getMovement(line(0))
-    }
-
-    resource.close()
-
-    println(movementArr)
-
-    movementArr.toArray
+class PlayMenuFile(map: maps.Map, movements: List[Movement]) extends menu.Menu {
+  override def display(): Unit = {
+    playGameWithFile()
   }
 
-  override def display(): Unit = {
-    breakable {
-      for (
-        move <- loadMovements()
-      ) {
-        // TODO make this smoother
-        print("\u001b[2J")
-        map.drawMap()
+  private def playGameWithFile(): Unit = {
+    @tailrec
+    def playGame(movements: List[Movement]): GameStatus = {
+      movements match {
+        case List() => GameStatus.ONGOING
+        case head :: tail =>
+          // TODO make this smoother
+          print("\u001b[2J")
+          map.drawMap()
 
-        Thread.sleep(800)
-        map.movePlayer(move)
+          Thread.sleep(800)
+          map.movePlayer(head)
 
-        print("\u001b[2J")
-        map.drawMap()
+          print("\u001b[2J")
+          map.drawMap()
 
-        if (map.getGameStatus == GameStatus.SUCCESS) {
-          println("Game is successfully finished! Press any key to go back.")
-          gameOver = true
+          if (map.getGameStatus == GameStatus.SUCCESS) {
+            return GameStatus.SUCCESS
+          }
 
-          break
-        }
+          if (map.getGameStatus == GameStatus.FAILURE) {
+            return GameStatus.FAILURE
+          }
 
-        if (map.getGameStatus == GameStatus.FAILURE) {
-          println("Game failed! Press any key to go back.")
-          gameOver = true
-
-          break
-        }
+          playGame(tail)
       }
     }
 
-    if (!gameOver) {
-      println("Unable to finish game with solution file")
+    playGame(movements) match {
+      case ONGOING => println("Unable to finish game with solution file")
+      case SUCCESS => println("Game is successfully finished! Press any key to go back.")
+      case FAILURE => println("Game failed! Press any key to go back.")
     }
   }
 
   override def handleInput(input: String): Unit = {
-    if (gameOver) {
-      input match {
-        case _ => MenuSwitcher.goBack()
-      }
+    input match {
+      case _ => MenuSwitcher.goBack()
     }
   }
 }
