@@ -16,12 +16,18 @@ object SolverMenu extends Menu {
 
   override def handleInput(input: String): Unit = {
     input match {
+      case y if y == "" =>
       case x if x.forall(Character.isDigit) && x.toInt == MapsManager.getNumMaps + 1 => menu.MenuSwitcher.goBack()
       case n if n.forall(Character.isDigit) && n.toInt <= MapsManager.getNumMaps =>
         saveSolution(
           MapSolver.runSolver(MapsManager.getMap(n.toInt)),
           n.toInt
         )
+
+        // For UX
+        print("Press any key to continue.")
+        scala.io.StdIn.readLine()
+      case _ =>
     }
   }
 

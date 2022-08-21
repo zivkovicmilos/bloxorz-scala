@@ -113,6 +113,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
     try {
       input match {
+        case y if y == "" =>
         case x if x.forall(Character.isDigit) && x.toInt == availableOperations.size + 1 => menu.MenuSwitcher.goBack()
         case n =>
           if (n.forall(Character.isDigit) && n.toInt <= availableOperations.size) {
@@ -120,6 +121,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
             availableOperations(selectedOp - 1).run()
           }
+        case _ =>
       }
     } catch {
       case e: Error => feedback = f"Error occurred during map edits: ${e.getMessage}"
@@ -274,33 +276,6 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     feedback = f"$SPECIAL tiles swapped with $GROUND"
   }
 
-  private def setBoardField(position: Position, fieldType: FieldType): Unit = {
-    map(position.y)(position.x) = BoardField(fieldType, position)
-  }
-
-  private def getFieldCandidates(checkFn: BoardField => Boolean): List[BoardField] = {
-    val candidates = ListBuffer[BoardField]()
-    for (
-      row <- map.indices
-    ) {
-      for (
-        column <- map(row).indices
-      ) {
-        val field = map(row)(column)
-
-        if (checkFn(field)) {
-          candidates += field
-        }
-      }
-    }
-
-    candidates.toList
-  }
-
-  private def isFieldType(position: Position, fieldType: FieldType): Boolean = {
-    map(position.y)(position.x).fieldType == fieldType
-  }
-
   private def swapStartAndTarget(): Unit = {
     // Define the check function
     val checkFnStart = (field: BoardField) => isFieldType(field.position, START)
@@ -409,6 +384,29 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     setBoardField(position, addType)
   }
 
+  private def setBoardField(position: Position, fieldType: FieldType): Unit = {
+    map(position.y)(position.x) = BoardField(fieldType, position)
+  }
+
+  private def getFieldCandidates(checkFn: BoardField => Boolean): List[BoardField] = {
+    val candidates = ListBuffer[BoardField]()
+    for (
+      row <- map.indices
+    ) {
+      for (
+        column <- map(row).indices
+      ) {
+        val field = map(row)(column)
+
+        if (checkFn(field)) {
+          candidates += field
+        }
+      }
+    }
+
+    candidates.toList
+  }
+
   private def getAndVerifyCoordinates(): Position = {
     // Wait for the user's input
     print("Tile (x): ")
@@ -467,6 +465,10 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
   private def isVoidField(position: Position): Boolean = {
     isFieldType(position, VOID)
+  }
+
+  private def isFieldType(position: Position, fieldType: FieldType): Boolean = {
+    map(position.y)(position.x).fieldType == fieldType
   }
 
   private def isBorderField(field: BoardField): Boolean = {

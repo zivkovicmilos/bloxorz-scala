@@ -17,15 +17,10 @@ class FilePlaythrough(map: maps.Map, movements: List[Movement]) extends menu.Men
       movements match {
         case List() => GameStatus.ONGOING
         case head :: tail =>
-          // TODO make this smoother
-          print("\u001b[2J")
-          map.drawMap()
-
-          Thread.sleep(800)
           val newMap = map.movePlayer(head)
 
-          print("\u001b[2J")
-          newMap.drawMap()
+          Thread.sleep(800) // For UX
+          printMapWithClear(newMap)
 
           if (newMap.getGameStatus == GameStatus.SUCCESS) {
             return GameStatus.SUCCESS
@@ -39,11 +34,18 @@ class FilePlaythrough(map: maps.Map, movements: List[Movement]) extends menu.Men
       }
     }
 
+    printMapWithClear(map)
+
     playGame(movements, map) match {
       case ONGOING => println("Unable to finish the game with the solution file")
       case SUCCESS => println("Game is successfully finished! Press any key to go back.")
       case FAILURE => println("Game failed! Press any key to go back.")
     }
+  }
+
+  private def printMapWithClear(map: maps.Map): Unit = {
+    print("\u001b[2J")
+    map.drawMap()
   }
 
   override def handleInput(input: String): Unit = {
