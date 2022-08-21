@@ -1,7 +1,8 @@
 package game
 
+import maps.FieldType.START
 import maps.Movement.Movement
-import maps.{MapsManager, Movement}
+import maps.{MapsManager, Movement, Player}
 import menu.MenuPrinter
 
 import java.io.File
@@ -30,10 +31,14 @@ class PlayMapMenu(selectedMap: Int) extends menu.Menu {
   }
 
   private def playWithKeyboard(): Unit = {
-    val map = new maps.Map(MapsManager.getMap(selectedMap))
-    map.initializePlayer()
+    menu.MenuSwitcher.goForward(new KeyboardPlaythrough(loadMap))
+  }
 
-    menu.MenuSwitcher.goForward(new KeyboardPlaythrough(map))
+  private def loadMap: maps.Map = {
+    val loadedMap = MapsManager.getMap(selectedMap)
+    val startPosition = MapsManager.findFieldPosition(loadedMap, START)
+
+    new maps.Map(loadedMap, Player(startPosition, startPosition))
   }
 
   private def playGameWithFile(): Unit = {
@@ -44,10 +49,7 @@ class PlayMapMenu(selectedMap: Int) extends menu.Menu {
     try {
       val movements = loadMovementsFromFile(fileName)
 
-      val map = new maps.Map(MapsManager.getMap(selectedMap))
-      map.initializePlayer()
-
-      menu.MenuSwitcher.goForward(new FilePlaythrough(map, movements))
+      menu.MenuSwitcher.goForward(new FilePlaythrough(loadMap, movements))
     } catch {
       case e: Error => println(f"Error encountered while loading file: ${e.getMessage}")
     }

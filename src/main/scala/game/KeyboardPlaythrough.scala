@@ -29,14 +29,12 @@ class KeyboardPlaythrough(map: maps.Map) extends menu.Menu {
           print("Next move: ")
 
           scala.io.StdIn.readLine() match {
-            case `up` => map.movePlayer(UP)
-            case `down` => map.movePlayer(DOWN)
-            case `left` => map.movePlayer(LEFT)
-            case `right` => map.movePlayer(RIGHT)
-            case _ =>
+            case `up` => playGame(map.movePlayer(UP))
+            case `down` => playGame(map.movePlayer(DOWN))
+            case `left` => playGame(map.movePlayer(LEFT))
+            case `right` => playGame(map.movePlayer(RIGHT))
+            case _ => playGame(map)
           }
-
-          playGame(map)
       }
     }
 

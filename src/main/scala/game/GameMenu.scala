@@ -7,7 +7,7 @@ object GameMenu extends menu.Menu {
   override def display(): Unit = {
     MenuPrinter.printMenu(
       "Start Game",
-      MapsManager.getMapNames() ::: List[String]("Back")
+      MapsManager.getMapNames ::: List[String]("Back")
     )
   }
 

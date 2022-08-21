@@ -10,7 +10,7 @@ object SolverMenu extends Menu {
   override def display(): Unit = {
     MenuPrinter.printMenu(
       "Solver",
-      MapsManager.getMapNames() ::: List[String]("Back")
+      MapsManager.getMapNames ::: List[String]("Back")
     )
   }
 

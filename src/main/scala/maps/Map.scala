@@ -3,61 +3,18 @@ package maps
 import game.GameStatus.{FAILURE, GameStatus, ONGOING, SUCCESS}
 import maps.Movement.{DOWN, LEFT, Movement, RIGHT, UP}
 
-class Map(map: Array[Array[BoardField]]) {
-  var player: Player = new Player(Position(0, 0))
-  var coveredFieldA: BoardField = BoardField(FieldType.START, Position(0, 0))
-  var coveredFieldB: BoardField = BoardField(FieldType.START, Position(0, 0))
-
+class Map(map: Array[Array[BoardField]], player: Player) {
   // Shorthand for drawing the map
   def drawMap(): Unit = {
-    MapDrawer.drawMap(map)
+    MapDrawer.drawMapWithPlayer(map, player)
   }
 
-  def initializePlayer(): Unit = {
-    for {
-      y <- map.indices
-    } {
-      for {
-        x <- map(y).indices
-      } {
-        if (map(y)(x).fieldType == FieldType.START) {
-          player = new Player(Position(x, y))
-          coveredFieldA = BoardField(FieldType.START, Position(x, y))
-          coveredFieldB = BoardField(FieldType.START, Position(x, y))
-          map(y)(x) = BoardField(FieldType.BLOCK, Position(x, y))
-
-          return
-        }
-      }
-    }
-  }
-
-  def movePlayer(move: Movement): Unit = {
+  def movePlayer(move: Movement): Map = {
     if (isAllowedMove(move)) {
-      val prevX1 = player.a.x
-      val prevY1 = player.a.y
-
-      val prevX2 = player.b.x
-      val prevY2 = player.b.y
-
-      player.move(move)
-
-      val x1 = player.a.x
-      val y1 = player.a.y
-
-      val x2 = player.b.x
-      val y2 = player.b.y
-
-
-      map(prevY1)(prevX1) = coveredFieldA
-      map(prevY2)(prevX2) = coveredFieldB
-
-      coveredFieldA = map(y1)(x1)
-      coveredFieldB = map(y2)(x2)
-
-      map(y1)(x1) = BoardField(FieldType.BLOCK, Position(x1, y1))
-      map(y2)(x2) = BoardField(FieldType.BLOCK, Position(x2, y2))
+      return new Map(map, player.move(move))
     }
+
+    new Map(map, player)
   }
 
   // Checks if the allowed move is in bounds
@@ -72,6 +29,8 @@ class Map(map: Array[Array[BoardField]]) {
 
   // Returns the game status
   def getGameStatus: GameStatus = {
+    val (coveredFieldA, coveredFieldB) = getCoveredFields
+
     // Check if the target has been reached
     if (coveredFieldA.fieldType == FieldType.TARGET && player.isUpright) {
       return SUCCESS
@@ -88,5 +47,20 @@ class Map(map: Array[Array[BoardField]]) {
     }
 
     ONGOING
+  }
+
+  // Returns the covered fields for each block of the player
+  def getCoveredFields: (BoardField, BoardField) = {
+    val x1 = player.a.x
+    val y1 = player.a.y
+
+    val coveredFieldA = map(y1)(x1)
+
+    val x2 = player.b.x
+    val y2 = player.b.y
+
+    val coveredFieldB = map(y2)(x2)
+
+    (coveredFieldA, coveredFieldB)
   }
 }

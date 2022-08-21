@@ -13,7 +13,7 @@ class FilePlaythrough(map: maps.Map, movements: List[Movement]) extends menu.Men
 
   private def playGameWithFile(): Unit = {
     @tailrec
-    def playGame(movements: List[Movement]): GameStatus = {
+    def playGame(movements: List[Movement], map: maps.Map): GameStatus = {
       movements match {
         case List() => GameStatus.ONGOING
         case head :: tail =>
@@ -22,24 +22,24 @@ class FilePlaythrough(map: maps.Map, movements: List[Movement]) extends menu.Men
           map.drawMap()
 
           Thread.sleep(800)
-          map.movePlayer(head)
+          val newMap = map.movePlayer(head)
 
           print("\u001b[2J")
-          map.drawMap()
+          newMap.drawMap()
 
-          if (map.getGameStatus == GameStatus.SUCCESS) {
+          if (newMap.getGameStatus == GameStatus.SUCCESS) {
             return GameStatus.SUCCESS
           }
 
-          if (map.getGameStatus == GameStatus.FAILURE) {
+          if (newMap.getGameStatus == GameStatus.FAILURE) {
             return GameStatus.FAILURE
           }
 
-          playGame(tail)
+          playGame(tail, newMap)
       }
     }
 
-    playGame(movements) match {
+    playGame(movements, map) match {
       case ONGOING => println("Unable to finish the game with the solution file")
       case SUCCESS => println("Game is successfully finished! Press any key to go back.")
       case FAILURE => println("Game failed! Press any key to go back.")

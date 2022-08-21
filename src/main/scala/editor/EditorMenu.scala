@@ -7,7 +7,7 @@ object EditorMenu extends menu.Menu {
   override def display(): Unit = {
     MenuPrinter.printMenu(
       "Editor",
-      MapsManager.getMapNames() ::: List("Back")
+      MapsManager.getMapNames ::: List("Back")
     )
   }
 

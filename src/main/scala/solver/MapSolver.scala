@@ -16,7 +16,7 @@ object MapSolver {
   def runSolverIterative(map: Array[Array[BoardField]]): List[Movement] = {
     // Find the starting position
     val start = maps.MapsManager.findFieldPosition(map, START)
-    val startPlayer = new Player(start)
+    val startPlayer = Player(start, start)
 
     // All found paths
     val foundPaths: ListBuffer[ListBuffer[Movement]] = ListBuffer[ListBuffer[Movement]]()
@@ -24,36 +24,19 @@ object MapSolver {
 
     visited += startPlayer
 
-    var possibleMoves: ListBuffer[PlayerMove] = ListBuffer[PlayerMove]()
-    if (canMove(startPlayer, map, UP)) {
-      possibleMoves += ((startPlayer, UP, ListBuffer[Movement]()))
-    }
-
-    if (canMove(startPlayer, map, DOWN)) {
-      possibleMoves += ((startPlayer, DOWN, ListBuffer[Movement]()))
-    }
-
-    if (canMove(startPlayer, map, RIGHT)) {
-      possibleMoves += ((startPlayer, RIGHT, ListBuffer[Movement]()))
-    }
-
-    if (canMove(startPlayer, map, LEFT)) {
-      possibleMoves += ((startPlayer, LEFT, ListBuffer[Movement]()))
-    }
+    var possibleMoves = findPossibleMoves(startPlayer, map)
 
     while (possibleMoves.nonEmpty) {
       val possibleMove = possibleMoves.head
-      val p = possibleMove._1.copy()
       val movement = possibleMove._2
+      val p = possibleMove._1.move(movement)
       val prevMovements = possibleMove._3.clone()
-
-      p.move(movement)
 
       visited += p
 
       prevMovements += movement
 
-      if (p.isUpright && map(p.a.y)(p.a.x).fieldType == FieldType.TARGET) {
+      if (isFinished(p, map)) {
         // Add the current path to the list of correct paths
         foundPaths += prevMovements
       } else {
@@ -77,17 +60,60 @@ object MapSolver {
       possibleMoves = possibleMoves.tail
     }
 
-    println(foundPaths)
     if (foundPaths.nonEmpty) {
-      foundPaths.sortWith((a, b) => a.length < b.length).head.toList
+      val list = foundPaths.sortWith((a, b) => a.length < b.length).head.toList
+      println(f"\nFound solution: \n${list.mkString(" -> ")}\n")
+
+      list
     } else {
+      println("No solution found for the specified map")
+
       List[Movement]()
     }
   }
 
+  private def notVisited(visitedPos: ArrayBuffer[Player], player: Player, movement: Movement): Boolean = {
+    val p = player.move(movement)
+
+    for (
+      position <- visitedPos.indices
+    ) {
+      if (p.a == visitedPos(position).a && p.b == visitedPos(position).b) {
+        return false
+      }
+    }
+
+    true
+  }
+
+  private def isFinished(p: Player, map: Array[Array[BoardField]]): Boolean = {
+    p.isUpright && map(p.a.y)(p.a.x).fieldType == FieldType.TARGET
+  }
+
+  private def findPossibleMoves(currentPos: Player, map: Array[Array[BoardField]]): ListBuffer[PlayerMove] = {
+    val possibleMoves: ListBuffer[PlayerMove] = ListBuffer[PlayerMove]()
+
+    if (canMove(currentPos, map, UP)) {
+      possibleMoves += ((currentPos, UP, ListBuffer[Movement]()))
+    }
+
+    if (canMove(currentPos, map, DOWN)) {
+      possibleMoves += ((currentPos, DOWN, ListBuffer[Movement]()))
+    }
+
+    if (canMove(currentPos, map, RIGHT)) {
+      possibleMoves += ((currentPos, RIGHT, ListBuffer[Movement]()))
+    }
+
+    if (canMove(currentPos, map, LEFT)) {
+      possibleMoves += ((currentPos, LEFT, ListBuffer[Movement]()))
+    }
+
+    possibleMoves
+  }
+
   private def canMove(player: Player, map: Array[Array[BoardField]], movement: Movement): Boolean = {
-    val p = player.copy()
-    p.move(movement)
+    val p = player.move(movement)
 
     if (!isInBounds(p, map, movement)) {
       return false
@@ -114,27 +140,12 @@ object MapSolver {
     }
   }
 
-  private def notVisited(visitedPos: ArrayBuffer[Player], player: Player, movement: Movement): Boolean = {
-    val p = player.copy()
-    p.move(movement)
-
-    for (
-      position <- visitedPos.indices
-    ) {
-      if (p.a == visitedPos(position).a && p.b == visitedPos(position).b) {
-        return false
-      }
-    }
-
-    true
-  }
-
   // Runs the recursive version of the solution algorithm to find the first
   // solution path, if any
   def runSolver(map: Array[Array[BoardField]]): List[Movement] = {
     // Find the starting position
     val start = maps.MapsManager.findFieldPosition(map, START)
-    val startPlayer = new Player(start)
+    val startPlayer = Player(start, start)
     val visited: ArrayBuffer[Player] = ArrayBuffer[Player](
       startPlayer
     )
@@ -150,17 +161,14 @@ object MapSolver {
         case ListBuffer() => ListBuffer[Movement]()
         // Check if the next move will produce a solution
         case ListBuffer(head, tail@_*) =>
-          val possibleMove = head
-          val p = possibleMove._1.copy()
-          val movement = possibleMove._2
-          val prevMovements = possibleMove._3.clone()
+          val movement = head._2
+          val p = head._1.move(movement)
+          val prevMovements = head._3.clone()
 
-          if (doneWithMovement(p, map, movement)) {
+          if (isFinished(p, map)) {
             // First solution path found, return it
             return prevMovements += movement
           }
-
-          p.move(movement)
 
           visited += p
           prevMovements += movement
@@ -199,34 +207,5 @@ object MapSolver {
 
       List[Movement]()
     }
-  }
-
-  private def doneWithMovement(player: Player, map: Array[Array[BoardField]], movement: Movement): Boolean = {
-    val p = player.copy()
-    p.move(movement)
-
-    p.isUpright && map(p.a.y)(p.a.x).fieldType == FieldType.TARGET
-  }
-
-  private def findPossibleMoves(currentPos: Player, map: Array[Array[BoardField]]): ListBuffer[PlayerMove] = {
-    val possibleMoves: ListBuffer[PlayerMove] = ListBuffer[PlayerMove]()
-
-    if (canMove(currentPos, map, UP)) {
-      possibleMoves += ((currentPos, UP, ListBuffer[Movement]()))
-    }
-
-    if (canMove(currentPos, map, DOWN)) {
-      possibleMoves += ((currentPos, DOWN, ListBuffer[Movement]()))
-    }
-
-    if (canMove(currentPos, map, RIGHT)) {
-      possibleMoves += ((currentPos, RIGHT, ListBuffer[Movement]()))
-    }
-
-    if (canMove(currentPos, map, LEFT)) {
-      possibleMoves += ((currentPos, LEFT, ListBuffer[Movement]()))
-    }
-
-    possibleMoves
   }
 }
