@@ -20,42 +20,42 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     },
     new EditOperation {
       override def run(): Unit = {
-        convertTile(GROUND, VOID)
+        convertTile(GROUND, VOID, getAndVerifyCoordinates())
       }
 
       override def getName: String = DefaultOperation.getName(REMOVE_TILE)
     },
     new EditOperation {
       override def run(): Unit = {
-        addTileToEdge()
+        addTileToEdge(getAndVerifyCoordinates())
       }
 
       override def getName: String = DefaultOperation.getName(ADD_TILE)
     },
     new EditOperation {
       override def run(): Unit = {
-        swapFields(GROUND, SPECIAL)
+        swapFields(GROUND, SPECIAL, getAndVerifyCoordinates())
       }
 
       override def getName: String = DefaultOperation.getName(SWAP_WITH_SPECIAL)
     },
     new EditOperation {
       override def run(): Unit = {
-        swapFields(SPECIAL, GROUND)
+        swapFields(SPECIAL, GROUND, getAndVerifyCoordinates())
       }
 
       override def getName: String = DefaultOperation.getName(SWAP_WITH_REGULAR)
     },
     new EditOperation {
       override def run(): Unit = {
-        swapFieldWithGround(START)
+        swapFieldWithGround(START, getAndVerifyCoordinates())
       }
 
       override def getName: String = DefaultOperation.getName(SET_START)
     },
     new EditOperation {
       override def run(): Unit = {
-        swapFieldWithGround(TARGET)
+        swapFieldWithGround(TARGET, getAndVerifyCoordinates())
       }
 
       override def getName: String = DefaultOperation.getName(SET_TARGET)
@@ -76,14 +76,25 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     },
     new EditOperation {
       override def run(): Unit = {
-        filterSpecial()
+        print("N distance value: ")
+        val nValue = scala.io.StdIn.readLine()
+
+        // Make sure the numbers are valid and in bounds
+        if (!nValue.forall(Character.isDigit)) {
+          throw new Error("Invalid N value specified!")
+        }
+
+        val N = nValue.toInt
+
+        filterSpecial(getAndVerifyCoordinates(), N)
       }
 
       override def getName: String = DefaultOperation.getName(FILTER_SPECIAL)
     },
     new EditOperation {
       override def run(): Unit = {
-        defineOperationList()
+        val (listName, operations) = getOperationsForList()
+        defineOperationList(listName, operations)
       }
 
       override def getName: String = DefaultOperation.getName(DEFINE_OPERATION_LIST)
@@ -128,32 +139,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     }
   }
 
-  private def defineOperationList(): Unit = {
-    print("New list name: ")
-    val listName = scala.io.StdIn.readLine()
-
-    print("Desired operations in list (format: x y z...): ")
-    val requestedOperations = scala.io.StdIn.readLine()
-
-    val operations = requestedOperations.split(" ")
-    val operationsList = ListBuffer[EditOperation]()
-
-    for (
-      requestedOp <- operations
-    ) {
-      if (!requestedOp.forall(Character.isDigit)) {
-        throw new Error("Invalid requested operation value specified!")
-      }
-
-      val opInt = requestedOp.toInt
-
-      if (opInt > availableOperations.size) {
-        throw new Error("Invalid operation selected")
-      }
-
-      operationsList += availableOperations(opInt - 1)
-    }
-
+  def defineOperationList(listName: String, operationsList: ListBuffer[EditOperation]): Unit = {
     availableOperations += new EditOperation {
       override def run(): Unit = {
         for (
@@ -169,7 +155,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     feedback = f"Created a new operation list: $listName"
   }
 
-  private def saveMap(): Unit = {
+  def saveMap(): Unit = {
     // Save the map to the Maps Manager
     MapsManager.appendMap(map)
 
@@ -200,19 +186,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     feedback = f"Map saved as $mapName"
   }
 
-  private def filterSpecial(): Unit = {
-    val position = getAndVerifyCoordinates()
-
-    print("N distance value: ")
-    val nValue = scala.io.StdIn.readLine()
-
-    // Make sure the numbers are valid and in bounds
-    if (!nValue.forall(Character.isDigit)) {
-      throw new Error("Invalid N value specified!")
-    }
-
-    val N = nValue.toInt
-
+  def filterSpecial(position: Position, N: Int): Unit = {
     // Get all the special candidates
     // Define the check function
     val checkFn = (field: BoardField) => isFieldType(field.position, SPECIAL)
@@ -247,9 +221,36 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     feedback = "No tiles filtered"
   }
 
-  private def swapFields(initialType: FieldType, desiredType: FieldType): Unit = {
-    val position = getAndVerifyCoordinates()
+  def getAndVerifyCoordinates(): Position = {
+    // Wait for the user's input
+    print("Tile (x): ")
+    val x = scala.io.StdIn.readLine()
+    print("Tile (y): ")
+    val y = scala.io.StdIn.readLine()
 
+    // Make sure the numbers are valid and in bounds
+    if (!x.forall(Character.isDigit) || !y.forall(Character.isDigit)) {
+      throw new Error("Invalid coordinates specified!")
+    }
+
+    val position = Position(x.toInt, y.toInt)
+
+    if (outOfBounds(position)) {
+      throw new Error("Coordinates are out of bounds!")
+    }
+
+    position
+  }
+
+  private def outOfBounds(position: Position): Boolean = {
+    if (position.x < 0 || position.y < 0) {
+      return true
+    }
+
+    position.x >= map(0).length || position.y >= map.length
+  }
+
+  def swapFields(initialType: FieldType, desiredType: FieldType, position: Position): Unit = {
     // Check if the given field is of the initial type
     if (!isFieldType(position, initialType)) {
       throw new Error(f"Selected tile is not a ${initialType} field!")
@@ -260,7 +261,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     feedback = f"Tile at position ${position.x}, ${position.y} set to $desiredType"
   }
 
-  private def swapAllSpecial(): Unit = {
+  def swapAllSpecial(): Unit = {
     // Define the check function
     val checkFn = (field: BoardField) => isFieldType(field.position, SPECIAL)
 
@@ -276,7 +277,34 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     feedback = f"$SPECIAL tiles swapped with $GROUND"
   }
 
-  private def swapStartAndTarget(): Unit = {
+  private def setBoardField(position: Position, fieldType: FieldType): Unit = {
+    map(position.y)(position.x) = BoardField(fieldType, position)
+  }
+
+  private def getFieldCandidates(checkFn: BoardField => Boolean): List[BoardField] = {
+    val candidates = ListBuffer[BoardField]()
+    for (
+      row <- map.indices
+    ) {
+      for (
+        column <- map(row).indices
+      ) {
+        val field = map(row)(column)
+
+        if (checkFn(field)) {
+          candidates += field
+        }
+      }
+    }
+
+    candidates.toList
+  }
+
+  private def isFieldType(position: Position, fieldType: FieldType): Boolean = {
+    map(position.y)(position.x).fieldType == fieldType
+  }
+
+  def swapStartAndTarget(): Unit = {
     // Define the check function
     val checkFnStart = (field: BoardField) => isFieldType(field.position, START)
     val checkFnTarget = (field: BoardField) => isFieldType(field.position, TARGET)
@@ -292,9 +320,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
   }
 
-  private def swapFieldWithGround(fieldType: FieldType): Unit = {
-    val position = getAndVerifyCoordinates()
-
+  def swapFieldWithGround(fieldType: FieldType, position: Position): Unit = {
     // Define the check function
     val checkFn = (field: BoardField) => isFieldType(field.position, fieldType)
 
@@ -307,9 +333,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     feedback = f"Tile at position ${position.x}, ${position.y} set to $fieldType"
   }
 
-  private def addTileToEdge(): Unit = {
-    val position = getAndVerifyCoordinates()
-
+  def addTileToEdge(position: Position): Unit = {
     // Check if the field is right
     if (!isFieldType(position, VOID)) {
       throw new Error(f"Selected field is not of $VOID type")
@@ -352,7 +376,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     false
   }
 
-  private def convertTile(removeType: FieldType, addType: FieldType): Unit = {
+  def convertTile(removeType: FieldType, addType: FieldType, position: Position): Unit = {
     // Define the check function
     val checkFn = (field: BoardField) => isEdge(field) && isFieldType(field.position, removeType)
 
@@ -374,66 +398,12 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
       return
     }
 
-    val position = getAndVerifyCoordinates()
-
     // Make sure the tile at these coordinates is a valid tile
     if (!candidates.contains(BoardField(removeType, position))) {
       throw new Error("Selected field is not an edge tile!")
     }
 
     setBoardField(position, addType)
-  }
-
-  private def setBoardField(position: Position, fieldType: FieldType): Unit = {
-    map(position.y)(position.x) = BoardField(fieldType, position)
-  }
-
-  private def getFieldCandidates(checkFn: BoardField => Boolean): List[BoardField] = {
-    val candidates = ListBuffer[BoardField]()
-    for (
-      row <- map.indices
-    ) {
-      for (
-        column <- map(row).indices
-      ) {
-        val field = map(row)(column)
-
-        if (checkFn(field)) {
-          candidates += field
-        }
-      }
-    }
-
-    candidates.toList
-  }
-
-  private def getAndVerifyCoordinates(): Position = {
-    // Wait for the user's input
-    print("Tile (x): ")
-    val x = scala.io.StdIn.readLine()
-    print("Tile (y): ")
-    val y = scala.io.StdIn.readLine()
-
-    // Make sure the numbers are valid and in bounds
-    if (!x.forall(Character.isDigit) || !y.forall(Character.isDigit)) {
-      throw new Error("Invalid coordinates specified!")
-    }
-
-    val position = Position(x.toInt, y.toInt)
-
-    if (outOfBounds(position)) {
-      throw new Error("Coordinates are out of bounds!")
-    }
-
-    position
-  }
-
-  private def outOfBounds(position: Position): Boolean = {
-    if (position.x < 0 || position.y < 0) {
-      return true
-    }
-
-    position.x >= map(0).length || position.y >= map.length
   }
 
   private def isEdge(field: BoardField): Boolean = {
@@ -467,12 +437,37 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     isFieldType(position, VOID)
   }
 
-  private def isFieldType(position: Position, fieldType: FieldType): Boolean = {
-    map(position.y)(position.x).fieldType == fieldType
-  }
-
   private def isBorderField(field: BoardField): Boolean = {
     field.position.x == 0 || field.position.y == 0 ||
       field.position.y + 1 == map.length || field.position.x + 1 == map(0).length
+  }
+
+  private def getOperationsForList(): (String, ListBuffer[EditOperation]) = {
+    print("New list name: ")
+    val listName = scala.io.StdIn.readLine()
+
+    print("Desired operations in list (format: x y z...): ")
+    val requestedOperations = scala.io.StdIn.readLine()
+
+    val operations = requestedOperations.split(" ")
+    val operationsList = ListBuffer[EditOperation]()
+
+    for (
+      requestedOp <- operations
+    ) {
+      if (!requestedOp.forall(Character.isDigit)) {
+        throw new Error("Invalid requested operation value specified!")
+      }
+
+      val opInt = requestedOp.toInt
+
+      if (opInt > availableOperations.size) {
+        throw new Error("Invalid operation selected")
+      }
+
+      operationsList += availableOperations(opInt - 1)
+    }
+
+    (listName, operationsList)
   }
 }
