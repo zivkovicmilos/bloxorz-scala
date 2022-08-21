@@ -27,7 +27,13 @@ object SolverMenu extends Menu {
 
   // Saves the solution to a local file in the format: map_index_solution.txt
   private def saveSolution(solution: List[Movement], mapIndex: Int): Unit = {
-    val file = new File(f"${MapsManager.mapPrefix}${mapIndex}_solution.txt")
+    if (solution.isEmpty) {
+      // No need to save an empty solution to a file
+      return
+    }
+
+    val fileName = f"${MapsManager.mapPrefix}${mapIndex}_solution.txt"
+    val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))
 
     for (
@@ -37,6 +43,8 @@ object SolverMenu extends Menu {
     }
 
     bw.close()
+
+    println(f"Solution saved to: $fileName\n")
   }
 }
 

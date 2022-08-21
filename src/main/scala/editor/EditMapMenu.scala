@@ -9,8 +9,6 @@ import java.io.{BufferedWriter, File, FileWriter}
 import scala.collection.mutable.ListBuffer
 
 class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
-  var feedback: String = ""
-
   val availableOperations: ListBuffer[EditOperation] = ListBuffer[EditOperation](
     // Define basic operations
     new EditOperation {
@@ -91,6 +89,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
       override def getName: String = DefaultOperation.getName(DEFINE_OPERATION_LIST)
     }
   )
+  var feedback: String = ""
 
   override def display(): Unit = {
     MapDrawer.drawMap(map)
@@ -114,7 +113,6 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
 
     try {
       input match {
-        // TODO handle this better
         case x if x.forall(Character.isDigit) && x.toInt == availableOperations.size + 1 => menu.MenuSwitcher.goBack()
         case n =>
           if (n.forall(Character.isDigit) && n.toInt <= availableOperations.size) {
@@ -124,7 +122,7 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
           }
       }
     } catch {
-      case e: Error => feedback = f"Error occurred during map edits: $e"
+      case e: Error => feedback = f"Error occurred during map edits: ${e.getMessage}"
     }
   }
 
@@ -384,28 +382,6 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     setBoardField(position, addType)
   }
 
-  private def getAndVerifyCoordinates(): Position = {
-    // Wait for the user's input
-    print("Tile (x): ")
-    val x = scala.io.StdIn.readLine()
-    print("Tile (y): ")
-    val y = scala.io.StdIn.readLine()
-
-    // Make sure the numbers are valid and in bounds
-    if (!x.forall(Character.isDigit) || !y.forall(Character.isDigit)) {
-      throw new Error("Invalid coordinates specified!")
-    }
-
-    val position = Position(x.toInt, y.toInt)
-
-    if (outOfBounds(position)) {
-      throw new Error("Coordinates are out of bounds!")
-    }
-
-    position
-  }
-
-
   private def setBoardField(position: Position, fieldType: FieldType): Unit = {
     map(position.y)(position.x) = BoardField(fieldType, position)
   }
@@ -429,14 +405,39 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     candidates.toList
   }
 
+  private def getAndVerifyCoordinates(): Position = {
+    // Wait for the user's input
+    print("Tile (x): ")
+    val x = scala.io.StdIn.readLine()
+    print("Tile (y): ")
+    val y = scala.io.StdIn.readLine()
+
+    // Make sure the numbers are valid and in bounds
+    if (!x.forall(Character.isDigit) || !y.forall(Character.isDigit)) {
+      throw new Error("Invalid coordinates specified!")
+    }
+
+    val position = Position(x.toInt, y.toInt)
+
+    if (outOfBounds(position)) {
+      throw new Error("Coordinates are out of bounds!")
+    }
+
+    position
+  }
+
+  private def outOfBounds(position: Position): Boolean = {
+    if (position.x < 0 || position.y < 0) {
+      return true
+    }
+
+    position.x >= map(0).length || position.y >= map.length
+  }
+
   private def isEdge(field: BoardField): Boolean = {
     // A field is an edge field if it has any void fields as neighbors
     // or if it is a field at the far edges of the map
     isBorderField(field) || hasVoidNeighbors(field)
-  }
-
-  private def isFieldType(position: Position, fieldType: FieldType): Boolean = {
-    map(position.y)(position.x).fieldType == fieldType
   }
 
   private def hasVoidNeighbors(field: BoardField): Boolean = {
@@ -460,20 +461,16 @@ class EditMapMenu(map: Array[Array[BoardField]]) extends menu.Menu {
     outOfBounds(downNeighbor) && isVoidField(downNeighbor)
   }
 
-  private def isBorderField(field: BoardField): Boolean = {
-    field.position.x == 0 || field.position.y == 0 ||
-      field.position.y + 1 == map.length || field.position.x + 1 == map(0).length
-  }
-
   private def isVoidField(position: Position): Boolean = {
     isFieldType(position, VOID)
   }
 
-  private def outOfBounds(position: Position): Boolean = {
-    if (position.x < 0 || position.y < 0) {
-      return true
-    }
+  private def isFieldType(position: Position, fieldType: FieldType): Boolean = {
+    map(position.y)(position.x).fieldType == fieldType
+  }
 
-    position.x >= map(0).length || position.y >= map.length
+  private def isBorderField(field: BoardField): Boolean = {
+    field.position.x == 0 || field.position.y == 0 ||
+      field.position.y + 1 == map.length || field.position.x + 1 == map(0).length
   }
 }

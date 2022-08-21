@@ -26,7 +26,7 @@ object MapsManager {
       menuItems += "Map %d".format(i)
     }
 
-    menuItems
+    menuItems.toList
   }
 
   // Returns the number of loaded maps
@@ -37,6 +37,20 @@ object MapsManager {
   // Loads in a map from the specified file
   def addMapFromFile(mapFile: String): Unit = {
     loadedMaps += loadMap(mapFile)
+  }
+
+  // Loads all of the predefined maps from
+  // the resources folder
+  def loadMaps(): Unit = {
+    for (
+      mapFile <- mapFiles
+    ) {
+      try {
+        loadedMaps += loadMap(mapFile)
+      } catch {
+        case e: Error => println(f"Unable to load map file $mapFile: ${e.getMessage}")
+      }
+    }
   }
 
   // Returns the map from the specified file
@@ -95,20 +109,6 @@ object MapsManager {
     }
 
     Position(-1, -1)
-  }
-
-  // Loads all of the predefined maps from
-  // the resources folder
-  def loadMaps(): Unit = {
-    for (
-      mapFile <- mapFiles
-    ) {
-      try {
-        loadedMaps += loadMap(mapFile)
-      } catch {
-        case e: Error => println(f"Unable to load map file $mapFile: ${e.getMessage}")
-      }
-    }
   }
 
   // Fetches a preloaded map, if present

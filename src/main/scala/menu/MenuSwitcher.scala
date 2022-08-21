@@ -3,20 +3,19 @@ package menu
 import scala.collection.{mutable => m}
 
 object MenuSwitcher {
-  var menuStack: m.Stack[Menu] = m.Stack[Menu](BaseMenu)
+  val menuStack: m.Stack[Menu] = m.Stack[Menu](BaseMenu)
 
-  private def clearConsole(): Unit = {
-    print("\u001b[2J")
-  }
-
+  // Adds a new menu to the stack
   def goForward(menu: Menu): Unit = {
     menuStack.push(menu)
   }
 
+  // Removes a menu from the stack
   def goBack(): Unit = {
     menuStack.pop()
   }
 
+  // Displays the menu that's at the top of the stack
   def showMenu(): Boolean = {
     // Clear the console
     clearConsole()
@@ -29,6 +28,12 @@ object MenuSwitcher {
     print("> ")
     currentMenu.handleInput(scala.io.StdIn.readLine())
 
+    // If there aren't any more menus to display, exit
     menuStack.size < 1
+  }
+
+  // Clears the console window
+  private def clearConsole(): Unit = {
+    print("\u001b[2J")
   }
 }
