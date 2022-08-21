@@ -11,7 +11,6 @@ object Movement extends Enumeration {
   RIGHT // r
   = Value
 
-
   def getMovement(move: Char): Movement = {
     move match {
       case 'u' => UP
