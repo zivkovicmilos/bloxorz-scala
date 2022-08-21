@@ -43,7 +43,7 @@ class KeyboardPlaythrough(map: maps.Map) extends menu.Menu {
     playGame(map) match {
       case SUCCESS => println("Game is successfully finished! Press any key to go back.")
       case FAILURE => println("Game failed! Press any key to go back.")
-      case _ =>
+      case _ => MenuSwitcher.goBack()
     }
   }
 

@@ -40,7 +40,7 @@ class FilePlaythrough(map: maps.Map, movements: List[Movement]) extends menu.Men
     }
 
     playGame(movements) match {
-      case ONGOING => println("Unable to finish game with solution file")
+      case ONGOING => println("Unable to finish the game with the solution file")
       case SUCCESS => println("Game is successfully finished! Press any key to go back.")
       case FAILURE => println("Game failed! Press any key to go back.")
     }

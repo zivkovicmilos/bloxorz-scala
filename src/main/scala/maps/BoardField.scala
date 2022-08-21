@@ -13,8 +13,4 @@ case class BoardField(fieldType: FieldType, position: Position) {
       Array(color + "+", color + "-", color + "-", color + "-", color + "+"),
     )
   }
-
-  def getPosition: Position = {
-    position
-  }
 }
