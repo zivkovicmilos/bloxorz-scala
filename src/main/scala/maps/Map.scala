@@ -1,7 +1,7 @@
 package maps
 
 import game.GameStatus.{FAILURE, GameStatus, ONGOING, SUCCESS}
-import maps.Movement.{DOWN, LEFT, Movement, RIGHT, UP}
+import maps.Movement.Movement
 
 class Map(map: Array[Array[BoardField]], player: Player) {
   // Shorthand for drawing the map
@@ -10,7 +10,7 @@ class Map(map: Array[Array[BoardField]], player: Player) {
   }
 
   def movePlayer(move: Movement): Map = {
-    if (isAllowedMove(move)) {
+    if (playerInBounds(player.move(move))) {
       return new Map(map, player.move(move))
     }
 
@@ -18,13 +18,16 @@ class Map(map: Array[Array[BoardField]], player: Player) {
   }
 
   // Checks if the allowed move is in bounds
-  private def isAllowedMove(move: Movement): Boolean = {
-    move match {
-      case UP => player.a.y > 0 || player.b.y > 0
-      case DOWN => player.a.y + 1 < map.length || player.b.y + 1 < map.length
-      case LEFT => player.a.x > 0 || player.b.x > 0
-      case RIGHT => player.a.x + 1 < map(0).length || player.b.x + 1 < map(0).length
+  private def playerInBounds(player: Player): Boolean = {
+    !outOfBounds(player.a) && !outOfBounds(player.b)
+  }
+
+  private def outOfBounds(position: Position): Boolean = {
+    if (position.x < 0 || position.y < 0) {
+      return true
     }
+
+    position.x >= map(0).length || position.y >= map.length
   }
 
   // Returns the game status
