@@ -29,11 +29,16 @@ object MenuSwitcher {
     currentMenu.handleInput(scala.io.StdIn.readLine())
 
     // If there aren't any more menus to display, exit
-    menuStack.size < 1
+    numMenus() < 1
   }
 
   // Clears the console window
   private def clearConsole(): Unit = {
     print("\u001b[2J")
+  }
+
+  // Returns the current number of active menus
+  def numMenus(): Int = {
+    menuStack.size
   }
 }
