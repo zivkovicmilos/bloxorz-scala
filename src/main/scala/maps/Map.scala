@@ -8,7 +8,7 @@ class Map(map: Array[Array[BoardField]]) {
   var coveredFieldA: BoardField = BoardField(FieldType.START, Position(0, 0))
   var coveredFieldB: BoardField = BoardField(FieldType.START, Position(0, 0))
 
-
+  // Shorthand for drawing the map
   def drawMap(): Unit = {
     MapDrawer.drawMap(map)
   }
@@ -60,6 +60,7 @@ class Map(map: Array[Array[BoardField]]) {
     }
   }
 
+  // Checks if the allowed move is in bounds
   private def isAllowedMove(move: Movement): Boolean = {
     move match {
       case UP => player.a.y > 0 || player.b.y > 0
@@ -69,6 +70,7 @@ class Map(map: Array[Array[BoardField]]) {
     }
   }
 
+  // Returns the game status
   def getGameStatus: GameStatus = {
     // Check if the target has been reached
     if (coveredFieldA.fieldType == FieldType.TARGET && player.isUpright) {

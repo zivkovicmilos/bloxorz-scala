@@ -17,7 +17,7 @@ object MapsManager {
   )
 
   // Returns the formatted map names
-  def getMapNames(): List[String] = {
+  def getMapNames: List[String] = {
     val menuItems: ListBuffer[String] = ListBuffer[String]()
 
     for (
