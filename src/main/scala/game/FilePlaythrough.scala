@@ -6,7 +6,7 @@ import menu.MenuSwitcher
 
 import scala.annotation.tailrec
 
-class PlayMenuFile(map: maps.Map, movements: List[Movement]) extends menu.Menu {
+class FilePlaythrough(map: maps.Map, movements: List[Movement]) extends menu.Menu {
   override def display(): Unit = {
     playGameWithFile()
   }

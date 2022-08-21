@@ -33,7 +33,7 @@ class PlayMapMenu(selectedMap: Int) extends menu.Menu {
     val map = new maps.Map(MapsManager.getMap(selectedMap))
     map.initializePlayer()
 
-    menu.MenuSwitcher.goForward(new PlayMenu(map))
+    menu.MenuSwitcher.goForward(new KeyboardPlaythrough(map))
   }
 
   private def playGameWithFile(): Unit = {
@@ -47,7 +47,7 @@ class PlayMapMenu(selectedMap: Int) extends menu.Menu {
       val map = new maps.Map(MapsManager.getMap(selectedMap))
       map.initializePlayer()
 
-      menu.MenuSwitcher.goForward(new PlayMenuFile(map, movements))
+      menu.MenuSwitcher.goForward(new FilePlaythrough(map, movements))
     } catch {
       case e: Error => println(f"Error encountered while loading file: ${e.getMessage}")
     }

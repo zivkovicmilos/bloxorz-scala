@@ -39,7 +39,7 @@ object SolverMenu extends Menu {
     for (
       move <- solution
     ) {
-      bw.write(f"${Movement.getMovementCharacter(move)}\n")
+      bw.write(f"${Movement.getChar(move)}\n")
     }
 
     bw.close()

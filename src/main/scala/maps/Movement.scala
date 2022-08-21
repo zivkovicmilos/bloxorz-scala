@@ -22,7 +22,7 @@ object Movement extends Enumeration {
     }
   }
 
-  def getMovementCharacter(movement: Movement): Char = {
+  def getChar(movement: Movement): Char = {
     movement match {
       case UP => 'u'
       case DOWN => 'd'
