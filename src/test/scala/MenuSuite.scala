@@ -4,18 +4,16 @@ import solver.SolverMenu
 
 class MenuSuite extends AnyFunSuite {
   test("should add a new menu to the stack") {
-    assert(MenuSwitcher.numMenus() == 1)
-
+    val initialMenus = MenuSwitcher.numMenus()
     MenuSwitcher.goForward(SolverMenu)
 
-    assert(MenuSwitcher.numMenus() == 2)
+    assert(MenuSwitcher.numMenus() == initialMenus + 1)
   }
 
   test("should pop a menu from the stack") {
-    assert(MenuSwitcher.numMenus() == 1)
-
+    val initialMenus = MenuSwitcher.numMenus()
     MenuSwitcher.goBack()
 
-    assert(MenuSwitcher.numMenus() == 0)
+    assert(MenuSwitcher.numMenus() == initialMenus - 1)
   }
 }
