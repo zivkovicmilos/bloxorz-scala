@@ -2,8 +2,9 @@ package maps
 
 import maps.FieldType.{FieldType, START, TARGET}
 
+import java.io.File
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
 
 object MapsManager {
   val loadedMaps: ArrayBuffer[Array[Array[BoardField]]] = ArrayBuffer[Array[Array[BoardField]]]()
@@ -35,28 +36,25 @@ object MapsManager {
   }
 
   // Loads in a map from the specified file
-  def addMapFromFile(mapFile: String): Unit = {
-    loadedMaps += loadMap(mapFile)
+  def addMapFromFile(path: String): Unit = {
+    val resource = getFileSource(path)
+    loadedMaps += loadMap(resource)
+
+    resource.close()
   }
 
-  // Loads all of the predefined maps from
-  // the resources folder
-  def loadMaps(): Unit = {
-    for (
-      mapFile <- mapFiles
-    ) {
-      try {
-        loadedMaps += loadMap(mapFile)
-      } catch {
-        case e: Error => println(f"Unable to load map file $mapFile: ${e.getMessage}")
-      }
+  private def getFileSource(path: String): BufferedSource = {
+    val file = new File(path)
+
+    if (!file.isFile || !file.exists()) {
+      throw new Error(f"File $path is not a valid file path")
     }
+
+    Source.fromFile(file)
   }
 
   // Returns the map from the specified file
-  def loadMap(mapFile: String): Array[Array[BoardField]] = {
-    val resource = Source.fromResource(mapFile)
-
+  private def loadMap(resource: BufferedSource): Array[Array[BoardField]] = {
     var y = 0
     val result: ArrayBuffer[Array[BoardField]] = ArrayBuffer[Array[BoardField]]()
 
@@ -73,8 +71,6 @@ object MapsManager {
       result += row.toArray
       y += 1
     }
-
-    resource.close()
 
     val loadedMap = result.toArray
 
@@ -109,6 +105,28 @@ object MapsManager {
     }
 
     Position(-1, -1)
+  }
+
+  // Loads all of the predefined maps from
+  // the resources folder
+  def loadMaps(): Unit = {
+    for (
+      mapFile <- mapFiles
+    ) {
+      try {
+        loadedMaps += loadMapFromResource(mapFile)
+      } catch {
+        case e: Error => println(f"Unable to load map file $mapFile: ${e.getMessage}")
+      }
+    }
+  }
+
+  private def loadMapFromResource(mapName: String): Array[Array[BoardField]] = {
+    val resource = Source.fromResource(mapName)
+    val map = loadMap(resource)
+
+    resource.close()
+    map
   }
 
   // Fetches a preloaded map, if present
